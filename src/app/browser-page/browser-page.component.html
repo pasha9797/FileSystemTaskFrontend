@@ -1,0 +1,32 @@
+<div class="container">
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">Home</li>
+      <li class="breadcrumb-item"  *ngFor="let part of currentPath.split('\\')" cla>{{part}}</li>
+    </ol>
+  </nav>
+
+  <table class="table table-hover">
+    <thead class="table-primary">
+    <tr>
+      <th scope="col">Type</th>
+      <th scope="col">Name</th>
+      <th scope="col">Size</th>
+      <th scope="col">Created</th>
+      <th scope="col">Last modified</th>
+      <th scope="col">Last accessed</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let file of currentContent" (click)="loadDirectory(file.path)">
+      <td><i class="fas {{file.directory?'fa-folder-open':'fa-file'}} fa-2x mr-2"></i></td>
+      <td>{{file.path}}</td>
+      <td>{{getSizeString(file.size)}}</td>
+      <td>{{file.creationDate.toLocaleString()}}</td>
+      <td>{{file.lastModifiedDate.toLocaleString()}}</td>
+      <td>{{file.lastAccessDate.toLocaleString()}}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
