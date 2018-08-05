@@ -16,8 +16,15 @@ export class FileSystemService {
 
   public getDirectoryContent(path: string) {
     path=path.replace(/\\/gi,'/');
-    return this.http.get('api/get-directory-content?path='+path).pipe(map((response: Response) => {
+    return this.http.get('api/get-directory-content?path='+encodeURIComponent(path)).pipe(map((response: Response) => {
       return response.json();
+    }));
+  }
+
+  public getTextFileContent(path: string) {
+    path=path.replace(/\\/gi,'/');
+    return this.http.get('api/get-text-file-content?path='+path).pipe(map((response: Response) => {
+      return response;
     }));
   }
 }
