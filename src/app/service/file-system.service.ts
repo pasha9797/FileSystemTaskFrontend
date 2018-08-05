@@ -9,7 +9,7 @@ export class FileSystemService {
   }
 
   public getFileInfo(path: string) {
-    return this.http.get('api/get-file-info?path='+path).pipe(map((response: Response) => {
+    return this.http.get('api/get-file-info?path='+encodeURIComponent(path)).pipe(map((response: Response) => {
       return response.json();
     }));
   }
@@ -23,7 +23,14 @@ export class FileSystemService {
 
   public getTextFileContent(path: string) {
     path=path.replace(/\\/gi,'/');
-    return this.http.get('api/get-text-file-content?path='+path).pipe(map((response: Response) => {
+    return this.http.get('api/get-text-file-content?path='+encodeURIComponent(path)).pipe(map((response: Response) => {
+      return response;
+    }));
+  }
+
+  public renameFile(path: string, newName:string) {
+    path=path.replace(/\\/gi,'/');
+    return this.http.post('api/rename-file',{path:path,newName:newName}).pipe(map((response: Response) => {
       return response;
     }));
   }

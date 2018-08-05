@@ -1,63 +1,157 @@
-<div class="container">
-  <div id="overlay">
-    <div class="row justify-content-center">
-      <div class="card" style="width: 90%;">
-        <div class="card-body">
-          <div class="row justify-content-between">
-            <div class="col-auto">
-              <h3 class="card-title">{{textFileName}}</h3>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-9 col-md-6 col-sm-12">
+      <div id="myModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+           aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">{{modalHeader}}</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
-            <div class="col-auto">
-              <i class="fas fa-window-close fa-2x"  (click)="hideFileOverlay()"></i>
+            <div class="modal-body">
+              <p>{{modalMessage}}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
             </div>
           </div>
-          <p class="card-text" style="height: 85vh; overflow-y: scroll;">{{textFileContent}}</p>
+        </div>
+      </div>
+
+      <div id="overlay">
+        <div class="row justify-content-center">
+          <div class="card" style="width: 90%;">
+            <div class="card-body">
+              <div class="row justify-content-between">
+                <div class="col-auto">
+                  <h3 class="card-title">{{textFileName}}</h3>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-window-close fa-2x" (click)="hideFileOverlay()"></i>
+                </div>
+              </div>
+              <p class="card-text" style="height: 85vh; overflow-y: scroll;">{{textFileContent}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="breadcrumb">
+        <div class="row no-gutters">
+          <div class="col-auto mt-1 mr-1">
+            <button type="button" class="nav-item btn btn-dark" (click)="breadCrumbClick(currentPath.length-2)"
+                    [attr.disabled]="currentPath.length>1?null:true">
+              <i class="fas fa-chevron-up"></i>
+            </button>
+          </div>
+          <div class="col">
+            <ol class="breadcrumb">
+              <li
+                *ngFor="let part of currentPath"
+                [ngClass]="{'breadcrumb-item': true, 'active': isLastDir(part)}"
+                [attr.aria-current]="isLastDir(part)?'page':''"
+              >
+                <a [attr.href]="!isLastDir(part)?'#':null"
+                   (click)="breadCrumbClick(currentPath.indexOf(part))">{{part}}</a>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-3 col-md-6 col-sm-12 order-md-2">
+      <div class="card">
+        <h5 class="card-header">Actions</h5>
+        <div class="card-body">
+          <p class="card-text">Choose what you want to do with files</p>
+          <div class="btn-group  btn-group-sm" role="group" aria-label="Choose action">
+            <button type="button" class="btn btn-secondary active" id="browse-button"
+                    (click)="handleFileAction($event)">
+              Browse
+            </button>
+            <button type="button" class="btn btn-secondary" id="rename-button" (click)="handleFileAction($event)">
+              Rename
+            </button>
+            <button type="button" class="btn btn-secondary" id="copy-button" (click)="handleFileAction($event)">
+              Copy
+            </button>
+            <button type="button" class="btn btn-secondary" id="move-button" (click)="handleFileAction($event)">
+              Move
+            </button>
+            <button type="button" class="btn btn-secondary" id="delete-button" (click)="handleFileAction($event)">
+              Delete
+            </button>
+          </div>
+          <div id="rename-block" style="display: none;">
+            <p class="card-text">Select file to rename</p>
+            <form class="form-inline" *ngIf="selectedFile!=null">
+              <div class="form-group row">
+                <label for="input-new-name"
+                       class="col col-form-label">{{getFileNameFromPath(selectedFile.path)}}</label>
+                <div class="col">
+                  <input type="text" class="form-control" id="input-new-name" name="input-new-name"
+                         [(ngModel)]="newNameInput" placeholder="New name">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary mr-2 mt-2 ml-auto"
+                      (click)="renameFile(newNameInput, selectedFile)" [disabled]="newNameInput==''">Rename
+              </button>
+
+            </form>
+          </div>
+          <div id="copy-block" style="display: none;">
+
+          </div>
+          <div id="move-block" style="display: none;">
+
+          </div>
+          <div id="delete-block" style="display: none;">
+
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <p class="card-text">Or load new file to the current directory</p>
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="customFile">
+            <label class="custom-file-label" for="customFile">Choose file</label>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <nav aria-label="breadcrumb">
-    <div class="row no-gutters">
-      <div class="col-auto mt-1 mr-1">
-        <button type="button" class="nav-item btn btn-dark" (click)="breadCrumbClick(currentPath.length-2)"
-                [attr.disabled]="currentPath.length>1?null:true">
-          <i class="fas fa-chevron-up"></i>
-        </button>
-      </div>
-      <div class="col">
-        <ol class="breadcrumb">
-          <li
-            *ngFor="let part of currentPath"
-            [ngClass]="{'breadcrumb-item': true, 'active': isLastDir(part)}"
-            [attr.aria-current]="isLastDir(part)?'page':''"
-          >
-            <a [attr.href]="!isLastDir(part)?'#':null" (click)="breadCrumbClick(currentPath.indexOf(part))">{{part}}</a>
-          </li>
-        </ol>
+
+    <div class="col-lg-9 col-md-6 col-sm-12 order-md-1">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-primary">
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">Name</th>
+            <th scope="col">Size</th>
+            <th scope="col">Created</th>
+            <th scope="col">Last modified</th>
+
+            <th style="width:7.5vw" scope="col">Last accessed</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let file of currentContent"
+              (click)="handleFileClick(file)">
+            <td><i class="fas {{getFileIconName(file)}} fa-2x mr-2"></i></td>
+            <td>{{getFileNameFromPath(file.path)}}</td>
+            <td>{{!file.directory?getSizeString(file.size):''}}</td>
+            <td>{{file.creationDate.toLocaleString()}}</td>
+            <td>{{file.lastModifiedDate.toLocaleString()}}</td>
+            <td>{{file.lastAccessDate.toLocaleString()}}</td>
+          </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-  </nav>
 
-  <table class="table table-hover">
-    <thead class="table-primary">
-    <tr>
-      <th scope="col">Type</th>
-      <th scope="col">Name</th>
-      <th scope="col">Size</th>
-      <th scope="col">Created</th>
-      <th scope="col">Last modified</th>
-      <th scope="col">Last accessed</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let file of currentContent" (click)="file.directory?loadDirectory(file.path):tryOpenFile(file.path)">
-      <td><i class="fas {{getFileIconName(file)}} fa-2x mr-2"></i></td>
-      <td>{{getFileNameFromPath(file.path)}}</td>
-      <td>{{getSizeString(file.size)}}</td>
-      <td>{{file.creationDate.toLocaleString()}}</td>
-      <td>{{file.lastModifiedDate.toLocaleString()}}</td>
-      <td>{{file.lastAccessDate.toLocaleString()}}</td>
-    </tr>
-    </tbody>
-  </table>
+  </div>
 </div>
