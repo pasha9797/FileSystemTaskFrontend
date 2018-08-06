@@ -12,10 +12,13 @@ declare var $: any;
 export class BrowserPageComponent implements OnInit {
   currentContent: FileDTO[];
   currentPath: string[];
+
   textFileContent: string = '';
   textFileName: string = '';
+
   selectedFile: FileDTO;
   newNameInput: string = '';
+
   modalMessage = '...';
   modalHeader = '...';
 
@@ -103,7 +106,7 @@ export class BrowserPageComponent implements OnInit {
 
   getFileNameFromPath(path: string) {
     let slashIndex = path.lastIndexOf('\\');
-    if (slashIndex > 0)
+    if (slashIndex >= 0)
       return path.slice(slashIndex + 1);
     else
       return path;
@@ -121,9 +124,10 @@ export class BrowserPageComponent implements OnInit {
     }
   }
 
-  handleFileAction(event: Event) {
+  handleFileActionButton(event: Event) {
     switch (event.srcElement.id) {
       case 'browse-button':
+        document.getElementById("browse-block").style.display = "block";
         document.getElementById("rename-block").style.display = "none";
         document.getElementById("move-block").style.display = "none";
         document.getElementById("copy-block").style.display = "none";
@@ -136,6 +140,7 @@ export class BrowserPageComponent implements OnInit {
         document.getElementById("delete-button").classList.remove('active');
         break;
       case 'rename-button':
+        document.getElementById("browse-block").style.display = "none";
         document.getElementById("rename-block").style.display = "block";
         document.getElementById("move-block").style.display = "none";
         document.getElementById("copy-block").style.display = "none";
@@ -148,6 +153,7 @@ export class BrowserPageComponent implements OnInit {
         document.getElementById("delete-button").classList.remove('active');
         break;
       case 'move-button':
+        document.getElementById("browse-block").style.display = "none";
         document.getElementById("rename-block").style.display = "none";
         document.getElementById("move-block").style.display = "block";
         document.getElementById("copy-block").style.display = "none";
@@ -160,6 +166,7 @@ export class BrowserPageComponent implements OnInit {
         document.getElementById("delete-button").classList.remove('active');
         break;
       case 'copy-button':
+        document.getElementById("browse-block").style.display = "none";
         document.getElementById("rename-block").style.display = "none";
         document.getElementById("move-block").style.display = "none";
         document.getElementById("copy-block").style.display = "block";
@@ -172,6 +179,7 @@ export class BrowserPageComponent implements OnInit {
         document.getElementById("delete-button").classList.remove('active');
         break;
       case 'delete-button':
+        document.getElementById("browse-block").style.display = "none";
         document.getElementById("rename-block").style.display = "none";
         document.getElementById("move-block").style.display = "none";
         document.getElementById("copy-block").style.display = "none";
@@ -195,28 +203,36 @@ export class BrowserPageComponent implements OnInit {
     }
     else if (document.getElementById("rename-button").classList.contains('active')) {
       this.selectedFile = file;
+      this.smoothScrollTop();
     }
-    else if (document.getElementById("move-button").classList.contains('active')) {
-
-    }
-    else if (document.getElementById("copy-button").classList.contains('active')) {
-
+    else if (
+      document.getElementById("copy-button").classList.contains('active') ||
+      document.getElementById("move-button").classList.contains('active')
+    ) {
+      if (this.selectedFile == null || !file.directory) {
+        this.selectedFile = file;
+        this.smoothScrollTop();
+      }
+      else {
+        if (file.directory)
+          this.loadDirectory(file.path);
+      }
     }
     else if (document.getElementById("delete-button").classList.contains('active')) {
 
     }
   }
 
-  renameFile(newName: string, file: FileDTO) {
-    this.fileSystemService.renameFile(file.path, newName)
+  renameSelectedFile(newName: string) {
+    this.fileSystemService.renameFile(this.selectedFile.path, newName)
       .subscribe(
         (response: any) => {
           console.log('File renamed successfully');
-          let slashIndex = file.path.lastIndexOf('\\');
+          let slashIndex = this.selectedFile.path.lastIndexOf('\\');
           if (slashIndex > 0)
-            file.path = file.path.slice(0, slashIndex + 1) + newName;
+            this.selectedFile.path = this.selectedFile.path.slice(0, slashIndex + 1) + newName;
           else
-            file.path = newName;
+            this.selectedFile.path = newName;
           this.showModal(response._body, 'Renamed successfully');
         },
         (error) => {
@@ -225,10 +241,72 @@ export class BrowserPageComponent implements OnInit {
         });
   }
 
+  copySelectedFileToCurrentDir() {
+    let newPath = '';
+    let currentDir = this.getCurrentPathString();
+    if (currentDir.length > 0)
+      newPath = currentDir + '\\' + this.getFileNameFromPath(this.selectedFile.path);
+    else newPath = this.getFileNameFromPath(this.selectedFile.path);
+
+    this.fileSystemService.moveFile(this.selectedFile.path, newPath, true)
+      .subscribe(
+        (response: any) => {
+          console.log('File copied successfully');
+          this.showModal("File has been copied successfully", 'Copied successfully');
+          let newFile = Object.assign({}, this.selectedFile);
+          newFile.path = response._body;
+          this.currentContent.push(newFile);
+          this.smoothScrollBottom();
+        },
+        (error) => {
+          console.log(error);
+          this.showModal(error._body, 'Failed to copy');
+        });
+  }
+
+  moveSelectedFileToCurrentDir() {
+    let newPath = '';
+    let currentDir = this.getCurrentPathString();
+    if (currentDir.length > 0)
+      newPath = currentDir + '\\' + this.getFileNameFromPath(this.selectedFile.path);
+    else newPath = this.getFileNameFromPath(this.selectedFile.path);
+
+    this.fileSystemService.moveFile(this.selectedFile.path, newPath, false)
+      .subscribe(
+        (response: any) => {
+          console.log('File moved successfully');
+          this.showModal("File has been moved successfully", 'Moved successfully');
+          this.selectedFile.path = response._body;
+          this.currentContent.push(this.selectedFile);
+          this.smoothScrollBottom();
+        },
+        (error) => {
+          console.log(error);
+          this.showModal(error._body, 'Failed to move');
+        });
+  }
+
   showModal(message: string, header: string) {
     this.modalMessage = message;
     this.modalHeader = header;
     $('#myModal').modal('show');
+  }
+
+  smoothScrollTop() {
+    $("html, body").animate({ scrollTop: 0 }, "slow");
+  }
+
+
+  smoothScrollBottom() {
+    $("html, body").animate({ scrollTop: document.body.scrollHeight }, "slow");
+  }
+
+  getCurrentPathString() {
+    let fullPath = this.currentPath.length > 1 ? this.currentPath[1] : '';
+    for (let i = 2; i < this.currentPath.length; i++) {
+      fullPath += '\\' + this.currentPath[i];
+    }
+    return fullPath;
   }
 
 }

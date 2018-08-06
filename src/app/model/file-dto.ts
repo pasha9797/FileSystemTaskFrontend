@@ -8,4 +8,5 @@ export class FileDTO {
 
   constructor() {
   }
+
 }
