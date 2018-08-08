@@ -68,82 +68,113 @@
         <h5 class="card-header">Actions</h5>
         <div class="card-body">
           <p class="card-text">Choose what you want to do with files</p>
-          <div class="btn-group  btn-group-sm" role="group" aria-label="Choose action">
-            <button type="button" class="btn btn-secondary active" id="browse-button"
-                    (click)="handleFileActionButton($event)">
-              Browse
-            </button>
-            <button type="button" class="btn btn-secondary" id="rename-button" (click)="handleFileActionButton($event)">
-              Rename
-            </button>
-            <button type="button" class="btn btn-secondary" id="copy-button" (click)="handleFileActionButton($event)">
-              Copy
-            </button>
-            <button type="button" class="btn btn-secondary" id="move-button" (click)="handleFileActionButton($event)">
-              Move
-            </button>
-            <button type="button" class="btn btn-secondary" id="delete-button" (click)="handleFileActionButton($event)">
-              Delete
-            </button>
-          </div>
-
-          <div class="dropdown-divider"></div>
-
-          <div id="browse-block" style="display: block;">
-            <p class="card-text">
-              Click on files and directories to browse through file system
-            </p>
-          </div>
-          <div id="rename-block" style="display: none;">
-            <p class="card-text">
-              {{selectedFile==null?'Select file to rename':getFileNameFromPath(selectedFile.path)}}
-            </p>
-            <form class="form" *ngIf="selectedFile!=null">
-              <input type="text" class="form-control" id="input-new-name" name="input-new-name"
-                     [(ngModel)]="newNameInput" placeholder="New name">
-              <button type="submit" class="btn btn-primary mt-2"
-                      (click)="renameSelectedFile(newNameInput)" [disabled]="newNameInput==''">Rename
-              </button>
-            </form>
-          </div>
-          <div id="copy-block" style="display: none;">
-            <div class="row">
-              <p class="card-text col-auto">
-                {{selectedFile==null?'Select file to copy':getFileNameFromPath(selectedFile.path)}}
-              </p>
-              <i class="fas fa-times-circle col mt-1" *ngIf="selectedFile!=null" (click)="selectedFile=null"></i>
+          <div class="row">
+            <div class="col-auto">
+              <div class="btn-group-vertical  btn-group-sm" role="group" aria-label="Choose action">
+                <button type="button" class="btn btn-secondary btn-action active" id="browse-button"
+                        (click)="handleFileActionButton($event)">
+                  Browse
+                </button>
+                <button type="button" class="btn btn-secondary btn-action" id="rename-button"
+                        (click)="handleFileActionButton($event)">
+                  Rename
+                </button>
+                <button type="button" class="btn btn-secondary btn-action" id="copy-button"
+                        (click)="handleFileActionButton($event)">
+                  Copy
+                </button>
+                <button type="button" class="btn btn-secondary btn-action" id="move-button"
+                        (click)="handleFileActionButton($event)">
+                  Move
+                </button>
+                <button type="button" class="btn btn-secondary btn-action" id="delete-button"
+                        (click)="handleFileActionButton($event)">
+                  Delete
+                </button>
+                <button type="button" class="btn btn-secondary btn-action" id="new-button"
+                        (click)="handleFileActionButton($event)">
+                  New
+                </button>
+              </div>
             </div>
-            <p class="card-text" *ngIf="selectedFile!=null">
-              Now go to directory to which you want to copy file
-            </p>
-            <button type="submit" class="btn btn-primary mt-1"
-                    (click)="copySelectedFileToCurrentDir()" *ngIf="selectedFile!=null">Copy
-            </button>
-          </div>
-          <div id="move-block" style="display: none;">
-            <div class="row">
-              <p class="card-text col-auto">
-                {{selectedFile==null?'Select file to move':getFileNameFromPath(selectedFile.path)}}
-              </p>
-              <i class="fas fa-times-circle col mt-1" *ngIf="selectedFile!=null" (click)="selectedFile=null"></i>
+            <div class="col">
+              <div id="browse-block" class="block-action" style="display: block;">
+                <p class="card-text">
+                  Click on files and directories to browse through file system
+                </p>
+              </div>
+              <div id="rename-block" class="block-action" style="display: none;">
+                <p class="card-text">
+                  {{selectedFile==null?'Select file to rename':getFileNameFromPath(selectedFile.path)}}
+                </p>
+                <form class="form" *ngIf="selectedFile!=null">
+                  <input type="text" class="form-control" id="input-new-name" name="input-new-name"
+                         [(ngModel)]="newNameInput" placeholder="New name">
+                  <button type="submit" class="btn btn-primary mt-2"
+                          (click)="renameSelectedFile(newNameInput)" [disabled]="newNameInput==''">Rename
+                  </button>
+                </form>
+              </div>
+              <div id="copy-block" class="block-action" style="display: none;">
+                <div class="row">
+                  <p class="card-text col-auto">
+                    {{selectedFile==null?'Select file to copy':getFileNameFromPath(selectedFile.path)}}
+                  </p>
+                  <i class="fas fa-times-circle col mt-1" *ngIf="selectedFile!=null" (click)="selectedFile=null"></i>
+                </div>
+                <p class="card-text" *ngIf="selectedFile!=null">
+                  Now go to directory to which you want to copy file
+                </p>
+                <button type="submit" class="btn btn-primary mt-1"
+                        (click)="copySelectedFileToCurrentDir()" *ngIf="selectedFile!=null">Copy
+                </button>
+              </div>
+              <div id="move-block" class="block-action" style="display: none;">
+                <div class="row">
+                  <p class="card-text col-auto">
+                    {{selectedFile==null?'Select file to move':getFileNameFromPath(selectedFile.path)}}
+                  </p>
+                  <i class="fas fa-times-circle col mt-1" *ngIf="selectedFile!=null" (click)="selectedFile=null"></i>
+                </div>
+                <p class="card-text" *ngIf="selectedFile!=null">
+                  Now go to directory to which you want to move file
+                </p>
+                <button type="submit" class="btn btn-primary mt-1"
+                        (click)="moveSelectedFileToCurrentDir()" *ngIf="selectedFile!=null">Move
+                </button>
+              </div>
+              <div id="delete-block" class="block-action" style="display: none;">
+                <p class="card-text">
+                  {{selectedFile==null?'Select file to delete':getFileNameFromPath(selectedFile.path)}}
+                </p>
+                <button type="submit" class="btn btn-primary mt-1"
+                        (click)="deleteSelectedFile()" *ngIf="selectedFile!=null">Delete
+                </button>
+              </div>
+              <div id="new-block" class="block-action" style="display: none;">
+                <p class="card-text">Load new file to the current directory</p>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" id="customFile" (change)="selectFileToUpload($event)">
+                  <label class="custom-file-label" for="customFile">
+                    {{fileToUpload==null?'Choose file':fileToUpload.name}}
+                  </label>
+                  <button type="submit" class="btn btn-primary mt-2"
+                          (click)="uploadFile()" *ngIf="fileToUpload!=null">Upload
+                  </button>
+                </div>
+
+                <div class="dropdown-divider mt-3"></div>
+
+                <p class="card-text">Or create new directory</p>
+                <form class="form">
+                  <input type="text" class="form-control" id="input-new-dir" name="input-new-dir"
+                         [(ngModel)]="newDirInput" placeholder="New directory name">
+                  <button type="submit" class="btn btn-primary mt-2"
+                          (click)="createDirectoryInCurrentDir(newDirInput)" [disabled]="newDirInput==''">Create
+                  </button>
+                </form>
+              </div>
             </div>
-            <p class="card-text" *ngIf="selectedFile!=null">
-              Now go to directory to which you want to move file
-            </p>
-            <button type="submit" class="btn btn-primary mt-1"
-                    (click)="moveSelectedFileToCurrentDir()" *ngIf="selectedFile!=null">Move
-            </button>
-          </div>
-          <div id="delete-block" style="display: none;">
-
-          </div>
-
-          <div class="dropdown-divider"></div>
-
-          <p class="card-text">Or load new file to the current directory</p>
-          <div class="custom-file">
-            <input type="file" class="custom-file-input" id="customFile">
-            <label class="custom-file-label" for="customFile">Choose file</label>
           </div>
         </div>
       </div>

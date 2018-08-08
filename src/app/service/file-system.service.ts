@@ -45,4 +45,30 @@ export class FileSystemService {
       return response;
     }));
   }
+
+  public removeFile(path: string) {
+    path = path.replace(/\\/gi, '/');
+    return this.http.delete('api/remove-file?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
+      return response;
+    }));
+  }
+
+  public uploadFile(file: File, directoryPath: string) {
+    directoryPath = directoryPath.replace(/\\/gi, '/');
+    let formdata: FormData = new FormData();
+    formdata.append('file', file);
+    formdata.append('directoryPath', directoryPath);
+    return this.http.post('api/upload-file', formdata).pipe(map((response: Response) => {
+      return response.json();
+    }));
+  }
+
+  public createDirectory(directoryPath:string) {
+    directoryPath = directoryPath.replace(/\\/gi, '/');
+    let formdata: FormData = new FormData();
+    formdata.append('directoryPath', directoryPath);
+    return this.http.post('api/create-directory', formdata).pipe(map((response: Response) => {
+      return response.json();
+    }));
+  }
 }

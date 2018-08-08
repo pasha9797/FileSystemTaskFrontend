@@ -19,6 +19,10 @@ export class BrowserPageComponent implements OnInit {
   selectedFile: FileDTO;
   newNameInput: string = '';
 
+  newDirInput: string = '';
+
+  fileToUpload: File;
+
   modalMessage = '...';
   modalHeader = '...';
 
@@ -125,83 +129,35 @@ export class BrowserPageComponent implements OnInit {
   }
 
   handleFileActionButton(event: Event) {
-    switch (event.srcElement.id) {
-      case 'browse-button':
-        document.getElementById("browse-block").style.display = "block";
-        document.getElementById("rename-block").style.display = "none";
-        document.getElementById("move-block").style.display = "none";
-        document.getElementById("copy-block").style.display = "none";
-        document.getElementById("delete-block").style.display = "none";
+    $(".btn-action").each(function (index) {
+      $(this).removeClass('active');
+    });
+    event.srcElement.classList.add('active');
 
-        document.getElementById("browse-button").classList.add('active');
-        document.getElementById("rename-button").classList.remove('active');
-        document.getElementById("move-button").classList.remove('active');
-        document.getElementById("copy-button").classList.remove('active');
-        document.getElementById("delete-button").classList.remove('active');
-        break;
-      case 'rename-button':
-        document.getElementById("browse-block").style.display = "none";
-        document.getElementById("rename-block").style.display = "block";
-        document.getElementById("move-block").style.display = "none";
-        document.getElementById("copy-block").style.display = "none";
-        document.getElementById("delete-block").style.display = "none";
+    $(".block-action").each(function (index) {
+      $(this).css('display', 'none');
+    });
+    $('#' + event.srcElement.id.slice(0, event.srcElement.id.indexOf('-')) + '-block').css('display', 'block');
 
-        document.getElementById("browse-button").classList.remove('active');
-        document.getElementById("rename-button").classList.add('active');
-        document.getElementById("move-button").classList.remove('active');
-        document.getElementById("copy-button").classList.remove('active');
-        document.getElementById("delete-button").classList.remove('active');
-        break;
-      case 'move-button':
-        document.getElementById("browse-block").style.display = "none";
-        document.getElementById("rename-block").style.display = "none";
-        document.getElementById("move-block").style.display = "block";
-        document.getElementById("copy-block").style.display = "none";
-        document.getElementById("delete-block").style.display = "none";
-
-        document.getElementById("browse-button").classList.remove('active');
-        document.getElementById("rename-button").classList.remove('active');
-        document.getElementById("move-button").classList.add('active');
-        document.getElementById("copy-button").classList.remove('active');
-        document.getElementById("delete-button").classList.remove('active');
-        break;
-      case 'copy-button':
-        document.getElementById("browse-block").style.display = "none";
-        document.getElementById("rename-block").style.display = "none";
-        document.getElementById("move-block").style.display = "none";
-        document.getElementById("copy-block").style.display = "block";
-        document.getElementById("delete-block").style.display = "none";
-
-        document.getElementById("browse-button").classList.remove('active');
-        document.getElementById("rename-button").classList.remove('active');
-        document.getElementById("move-button").classList.remove('active');
-        document.getElementById("copy-button").classList.add('active');
-        document.getElementById("delete-button").classList.remove('active');
-        break;
-      case 'delete-button':
-        document.getElementById("browse-block").style.display = "none";
-        document.getElementById("rename-block").style.display = "none";
-        document.getElementById("move-block").style.display = "none";
-        document.getElementById("copy-block").style.display = "none";
-        document.getElementById("delete-block").style.display = "block";
-
-        document.getElementById("browse-button").classList.remove('active');
-        document.getElementById("rename-button").classList.remove('active');
-        document.getElementById("move-button").classList.remove('active');
-        document.getElementById("copy-button").classList.remove('active');
-        document.getElementById("delete-button").classList.add('active');
-        break;
+    if (event.srcElement.id == 'delete-button') {
+      this.selectedFile = null;
     }
   }
 
   handleFileClick(file: FileDTO) {
-    if (document.getElementById("browse-button").classList.contains('active')) {
+    if (
+      document.getElementById("browse-button").classList.contains('active') ||
+      document.getElementById("new-button").classList.contains('active')
+    ) {
       if (file.directory)
         this.loadDirectory(file.path);
       else
         this.tryOpenFile(file.path);
     }
-    else if (document.getElementById("rename-button").classList.contains('active')) {
+    else if (
+      document.getElementById("rename-button").classList.contains('active') ||
+      document.getElementById("delete-button").classList.contains('active')
+    ) {
       this.selectedFile = file;
       this.smoothScrollTop();
     }
@@ -217,9 +173,6 @@ export class BrowserPageComponent implements OnInit {
         if (file.directory)
           this.loadDirectory(file.path);
       }
-    }
-    else if (document.getElementById("delete-button").classList.contains('active')) {
-
     }
   }
 
@@ -286,6 +239,69 @@ export class BrowserPageComponent implements OnInit {
         });
   }
 
+  deleteSelectedFile() {
+    this.fileSystemService.removeFile(this.selectedFile.path)
+      .subscribe(
+        (response: any) => {
+          console.log('File removed successfully');
+          this.showModal(response._body, 'Removed successfully');
+          let index = this.currentContent.indexOf(this.selectedFile);
+          if (index > -1) {
+            this.currentContent.splice(index, 1);
+          }
+          this.selectedFile = null;
+        },
+        (error) => {
+          console.log(error);
+          this.showModal(error._body, 'Failed to delete');
+        });
+  }
+
+  uploadFile() {
+    this.fileSystemService.uploadFile(this.fileToUpload, this.getCurrentPathString())
+      .subscribe(
+        (uploadedFileDTO: any) => {
+          console.log('File uploaded successfully');
+          this.showModal("Successfully uploaded file " + uploadedFileDTO.path, 'Uploaded successfully');
+          this.fileToUpload = null;
+
+          uploadedFileDTO.lastModifiedDate = new Date(uploadedFileDTO.lastModifiedDate);
+          uploadedFileDTO.creationDate = new Date(uploadedFileDTO.creationDate);
+          uploadedFileDTO.lastAccessDate = new Date(uploadedFileDTO.lastAccessDate);
+
+          this.currentContent.push(uploadedFileDTO);
+          this.smoothScrollBottom();
+        },
+        (error) => {
+          console.log(error);
+          this.showModal(error._body, 'Failed to upload');
+        });
+  }
+
+  createDirectoryInCurrentDir(name: string) {
+    this.fileSystemService.createDirectory(this.getCurrentPathString() + '\\' + name)
+      .subscribe(
+        (newDirDTO: any) => {
+          console.log('Directory created successfully');
+          this.showModal("Successfully created directory " + newDirDTO.path, 'Created successfully');
+
+          newDirDTO.lastModifiedDate = new Date(newDirDTO.lastModifiedDate);
+          newDirDTO.creationDate = new Date(newDirDTO.creationDate);
+          newDirDTO.lastAccessDate = new Date(newDirDTO.lastAccessDate);
+
+          this.currentContent.push(newDirDTO);
+          this.smoothScrollBottom();
+        },
+        (error) => {
+          console.log(error);
+          this.showModal(error._body, 'Failed to create');
+        });
+  }
+
+  selectFileToUpload(event) {
+    this.fileToUpload = event.target.files[0];
+  }
+
   showModal(message: string, header: string) {
     this.modalMessage = message;
     this.modalHeader = header;
@@ -293,12 +309,12 @@ export class BrowserPageComponent implements OnInit {
   }
 
   smoothScrollTop() {
-    $("html, body").animate({ scrollTop: 0 }, "slow");
+    $("html, body").animate({scrollTop: 0}, "slow");
   }
 
 
   smoothScrollBottom() {
-    $("html, body").animate({ scrollTop: document.body.scrollHeight }, "slow");
+    $("html, body").animate({scrollTop: document.body.scrollHeight}, "slow");
   }
 
   getCurrentPathString() {
