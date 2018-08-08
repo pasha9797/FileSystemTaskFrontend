@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config proxy-conf.json",
-    "build": "ng build --prod --base-href /FileSystemTask-1.0-SNAPSHOT/",
+    "build": "ng build --prod --base-href ./",
     "postbuild": "npm run deploy",
     "predeploy": "rimraf ../webapp/ui/ && mkdirp ../webapp/ui",
     "deploy": "copyfiles -f dist/** ../webapp/ui",
