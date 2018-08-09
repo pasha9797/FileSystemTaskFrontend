@@ -26,6 +26,8 @@ export class BrowserPageComponent implements OnInit {
   modalMessage = '...';
   modalHeader = '...';
 
+  loading = false;
+
   constructor(private fileSystemService: FileSystemService) {
   }
 
@@ -35,12 +37,13 @@ export class BrowserPageComponent implements OnInit {
 
   loadDirectory(path: string) {
     console.log('loading directory content for: ' + path);
-    this.currentPath = path.split('\\');
-    this.currentPath.unshift('Home');
-    this.currentPath = this.currentPath.filter(part => part.length > 0)
+    this.loading = true;
     this.fileSystemService.getDirectoryContent(path)
       .subscribe(
         (content: any[]) => {
+          this.currentPath = path.split('\\');
+          this.currentPath.unshift('Home');
+          this.currentPath = this.currentPath.filter(part => part.length > 0);
           this.currentContent = content;
           for (let file of this.currentContent) {
             file.lastModifiedDate = new Date(file.lastModifiedDate);
@@ -48,25 +51,27 @@ export class BrowserPageComponent implements OnInit {
             file.lastAccessDate = new Date(file.lastAccessDate);
           }
           console.log('Directory loaded successfully');
+          this.loading = false;
         },
         (error) => {
-          console.log(error);
-          this.showModal(error._body, 'Error loading directory');
+          this.loading = false;
+          this.defaultRequestErrorHandler('Unable to load directory content', error);
         });
   }
 
   tryOpenFile(path: string) {
     console.log('Trying to open file: ' + path);
-
-    this.fileSystemService.getTextFileContent(path)
+    this.loading = true;
+    this.fileSystemService.getFileContent(path)
       .subscribe(
         (content: any) => {
           this.showFileOverlay(content._body, this.getFileNameFromPath(path));
           console.log('Text file opened successfully');
+          this.loading = false;
         },
         (error) => {
-          console.log(error);
-          this.showModal(error._body, 'Unable to open file');
+          this.loading = false;
+          this.defaultRequestErrorHandler('Unable to open text file', error);
         });
   }
 
@@ -177,20 +182,30 @@ export class BrowserPageComponent implements OnInit {
   }
 
   renameSelectedFile(newName: string) {
-    this.fileSystemService.renameFile(this.selectedFile.path, newName)
+    if (newName.indexOf('\\') > -1 || newName.indexOf('/') > -1) {
+      this.showModal("Illegal characters found in file name.", "Can't rename");
+      return;
+    }
+
+    let newPath;
+    let slashIndex = this.selectedFile.path.lastIndexOf('\\');
+    if (slashIndex > 0)
+      newPath = this.selectedFile.path.slice(0, slashIndex + 1) + newName;
+    else
+      newPath = newName;
+
+    this.loading = true;
+    this.fileSystemService.renameFile(this.selectedFile.path, newPath)
       .subscribe(
         (response: any) => {
           console.log('File renamed successfully');
-          let slashIndex = this.selectedFile.path.lastIndexOf('\\');
-          if (slashIndex > 0)
-            this.selectedFile.path = this.selectedFile.path.slice(0, slashIndex + 1) + newName;
-          else
-            this.selectedFile.path = newName;
-          this.showModal(response._body, 'Renamed successfully');
+          this.selectedFile.path = response._body;
+          this.loading = false;
+          this.showModal('File has been renamed successfully to ' + response._body, 'Renamed successfully');
         },
         (error) => {
-          console.log(error);
-          this.showModal(error._body, 'Failed to rename');
+          this.defaultRequestErrorHandler('Unable to rename', error);
+          this.loading = false;
         });
   }
 
@@ -201,19 +216,21 @@ export class BrowserPageComponent implements OnInit {
       newPath = currentDir + '\\' + this.getFileNameFromPath(this.selectedFile.path);
     else newPath = this.getFileNameFromPath(this.selectedFile.path);
 
-    this.fileSystemService.moveFile(this.selectedFile.path, newPath, true)
+    this.loading = true;
+    this.fileSystemService.copyFile(this.selectedFile.path, newPath)
       .subscribe(
         (response: any) => {
           console.log('File copied successfully');
-          this.showModal("File has been copied successfully", 'Copied successfully');
+          this.showModal("File has been copied successfully. New file created: " + response._body, 'Copied successfully');
           let newFile = Object.assign({}, this.selectedFile);
           newFile.path = response._body;
           this.currentContent.push(newFile);
           this.smoothScrollBottom();
+          this.loading = false;
         },
         (error) => {
-          console.log(error);
-          this.showModal(error._body, 'Failed to copy');
+          this.defaultRequestErrorHandler('Unable to copy', error);
+          this.loading = false;
         });
   }
 
@@ -224,40 +241,45 @@ export class BrowserPageComponent implements OnInit {
       newPath = currentDir + '\\' + this.getFileNameFromPath(this.selectedFile.path);
     else newPath = this.getFileNameFromPath(this.selectedFile.path);
 
-    this.fileSystemService.moveFile(this.selectedFile.path, newPath, false)
+    this.loading = true;
+    this.fileSystemService.moveFile(this.selectedFile.path, newPath)
       .subscribe(
         (response: any) => {
           console.log('File moved successfully');
-          this.showModal("File has been moved successfully", 'Moved successfully');
+          this.showModal("File has been moved successfully to " + response._body, 'Moved successfully');
           this.selectedFile.path = response._body;
           this.currentContent.push(this.selectedFile);
           this.smoothScrollBottom();
+          this.loading = false;
         },
         (error) => {
-          console.log(error);
-          this.showModal(error._body, 'Failed to move');
+          this.loading = false;
+          this.defaultRequestErrorHandler('Unable to move', error);
         });
   }
 
   deleteSelectedFile() {
+    this.loading = true;
     this.fileSystemService.removeFile(this.selectedFile.path)
       .subscribe(
         (response: any) => {
           console.log('File removed successfully');
-          this.showModal(response._body, 'Removed successfully');
+          this.showModal("File has been removed successfully", 'Removed successfully');
           let index = this.currentContent.indexOf(this.selectedFile);
           if (index > -1) {
             this.currentContent.splice(index, 1);
           }
           this.selectedFile = null;
+          this.loading = false;
         },
         (error) => {
-          console.log(error);
-          this.showModal(error._body, 'Failed to delete');
+          this.loading = false;
+          this.defaultRequestErrorHandler('Unable to delete', error);
         });
   }
 
   uploadFile() {
+    this.loading = true;
     this.fileSystemService.uploadFile(this.fileToUpload, this.getCurrentPathString())
       .subscribe(
         (uploadedFileDTO: any) => {
@@ -271,14 +293,16 @@ export class BrowserPageComponent implements OnInit {
 
           this.currentContent.push(uploadedFileDTO);
           this.smoothScrollBottom();
+          this.loading = false;
         },
         (error) => {
-          console.log(error);
-          this.showModal(error._body, 'Failed to upload');
+          this.defaultRequestErrorHandler('Unable to upload file', error);
+          this.loading = false;
         });
   }
 
   createDirectoryInCurrentDir(name: string) {
+    this.loading = true;
     this.fileSystemService.createDirectory(this.getCurrentPathString() + '\\' + name)
       .subscribe(
         (newDirDTO: any) => {
@@ -291,10 +315,11 @@ export class BrowserPageComponent implements OnInit {
 
           this.currentContent.push(newDirDTO);
           this.smoothScrollBottom();
+          this.loading = false;
         },
         (error) => {
-          console.log(error);
-          this.showModal(error._body, 'Failed to create');
+          this.defaultRequestErrorHandler('Unable to create directory', error);
+          this.loading = false;
         });
   }
 
@@ -323,6 +348,14 @@ export class BrowserPageComponent implements OnInit {
       fullPath += '\\' + this.currentPath[i];
     }
     return fullPath;
+  }
+
+  defaultRequestErrorHandler(modalHeader: string, error) {
+    console.log(error);
+    if (error.status > 0)
+      this.showModal(error._body, modalHeader);
+    else
+      this.showModal("Lost connection to the server", modalHeader);
   }
 
 }

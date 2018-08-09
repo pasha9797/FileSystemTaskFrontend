@@ -9,38 +9,46 @@ export class FileSystemService {
   }
 
   public getFileInfo(path: string) {
-    return this.http.get('api/get-file-info?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
+    return this.http.get('api/files?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
       return response.json();
+    }));
+  }
+
+  public getFileContent(path: string) {
+    path = path.replace(/\\/gi, '/');
+    return this.http.get('api/files/content?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
+      return response;
     }));
   }
 
   public getDirectoryContent(path: string) {
     path = path.replace(/\\/gi, '/');
-    return this.http.get('api/get-directory-content?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
+    return this.http.get('api/files/content?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
       return response.json();
     }));
   }
 
-  public getTextFileContent(path: string) {
-    path = path.replace(/\\/gi, '/');
-    return this.http.get('api/get-text-file-content?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
-      return response;
-    }));
+  public renameFile(path: string, newPath: string) {
+    return this.moveFile(path, newPath);
   }
 
-  public renameFile(path: string, newName: string) {
+  public moveFile(path: string, newPath: string) {
     path = path.replace(/\\/gi, '/');
-    return this.http.post('api/rename-file', {path: path, newName: newName}).pipe(map((response: Response) => {
-      return response;
-    }));
-  }
-
-  public moveFile(path: string, newPath: string, keepOld: boolean) {
-    path = path.replace(/\\/gi, '/');
-    return this.http.post('api/move-file', {
+    return this.http.put('api/files', {
       path: path,
       newPath: newPath,
-      keepOld: keepOld
+      option: 'MOVE'
+    }).pipe(map((response: Response) => {
+      return response;
+    }));
+  }
+
+  public copyFile(path: string, newPath: string) {
+    path = path.replace(/\\/gi, '/');
+    return this.http.put('api/files', {
+      path: path,
+      newPath: newPath,
+      option: 'COPY'
     }).pipe(map((response: Response) => {
       return response;
     }));
@@ -48,7 +56,7 @@ export class FileSystemService {
 
   public removeFile(path: string) {
     path = path.replace(/\\/gi, '/');
-    return this.http.delete('api/remove-file?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
+    return this.http.delete('api/files?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
       return response;
     }));
   }
@@ -58,7 +66,7 @@ export class FileSystemService {
     let formdata: FormData = new FormData();
     formdata.append('file', file);
     formdata.append('directoryPath', directoryPath);
-    return this.http.post('api/upload-file', formdata).pipe(map((response: Response) => {
+    return this.http.post('api/files', formdata).pipe(map((response: Response) => {
       return response.json();
     }));
   }
@@ -67,7 +75,7 @@ export class FileSystemService {
     directoryPath = directoryPath.replace(/\\/gi, '/');
     let formdata: FormData = new FormData();
     formdata.append('directoryPath', directoryPath);
-    return this.http.post('api/create-directory', formdata).pipe(map((response: Response) => {
+    return this.http.post('api/files', formdata).pipe(map((response: Response) => {
       return response.json();
     }));
   }
