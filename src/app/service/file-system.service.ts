@@ -9,6 +9,7 @@ export class FileSystemService {
   }
 
   public getFileInfo(path: string) {
+    path = path.replace(/\\/gi, '/');
     return this.http.get('api/files?path=' + encodeURIComponent(path)).pipe(map((response: Response) => {
       return response.json();
     }));

@@ -41,7 +41,7 @@ export class BrowserPageComponent implements OnInit {
     this.fileSystemService.getDirectoryContent(path)
       .subscribe(
         (content: any[]) => {
-          this.currentPath = path.split('\\');
+          this.currentPath = path.split('/');
           this.currentPath.unshift('Home');
           this.currentPath = this.currentPath.filter(part => part.length > 0);
           this.currentContent = content;
@@ -106,7 +106,7 @@ export class BrowserPageComponent implements OnInit {
     if (index >= 0 && index < this.currentPath.length) {
       let path = '';
       for (let i = 1; i < index + 1; i++) {
-        path += '\\' + this.currentPath[i];
+        path += '/' + this.currentPath[i];
       }
       this.loadDirectory(path);
     }
@@ -114,7 +114,7 @@ export class BrowserPageComponent implements OnInit {
   }
 
   getFileNameFromPath(path: string) {
-    let slashIndex = path.lastIndexOf('\\');
+    let slashIndex = path.lastIndexOf('/');
     if (slashIndex >= 0)
       return path.slice(slashIndex + 1);
     else
@@ -182,13 +182,13 @@ export class BrowserPageComponent implements OnInit {
   }
 
   renameSelectedFile(newName: string) {
-    if (newName.indexOf('\\') > -1 || newName.indexOf('/') > -1) {
+    if (newName.indexOf('/') > -1 || newName.indexOf('/') > -1) {
       this.showModal("Illegal characters found in file name.", "Can't rename");
       return;
     }
 
     let newPath;
-    let slashIndex = this.selectedFile.path.lastIndexOf('\\');
+    let slashIndex = this.selectedFile.path.lastIndexOf('/');
     if (slashIndex > 0)
       newPath = this.selectedFile.path.slice(0, slashIndex + 1) + newName;
     else
@@ -213,7 +213,7 @@ export class BrowserPageComponent implements OnInit {
     let newPath = '';
     let currentDir = this.getCurrentPathString();
     if (currentDir.length > 0)
-      newPath = currentDir + '\\' + this.getFileNameFromPath(this.selectedFile.path);
+      newPath = currentDir + '/' + this.getFileNameFromPath(this.selectedFile.path);
     else newPath = this.getFileNameFromPath(this.selectedFile.path);
 
     this.loading = true;
@@ -238,7 +238,7 @@ export class BrowserPageComponent implements OnInit {
     let newPath = '';
     let currentDir = this.getCurrentPathString();
     if (currentDir.length > 0)
-      newPath = currentDir + '\\' + this.getFileNameFromPath(this.selectedFile.path);
+      newPath = currentDir + '/' + this.getFileNameFromPath(this.selectedFile.path);
     else newPath = this.getFileNameFromPath(this.selectedFile.path);
 
     this.loading = true;
@@ -303,7 +303,7 @@ export class BrowserPageComponent implements OnInit {
 
   createDirectoryInCurrentDir(name: string) {
     this.loading = true;
-    this.fileSystemService.createDirectory(this.getCurrentPathString() + '\\' + name)
+    this.fileSystemService.createDirectory(this.getCurrentPathString() + '/' + name)
       .subscribe(
         (newDirDTO: any) => {
           console.log('Directory created successfully');
@@ -345,7 +345,7 @@ export class BrowserPageComponent implements OnInit {
   getCurrentPathString() {
     let fullPath = this.currentPath.length > 1 ? this.currentPath[1] : '';
     for (let i = 2; i < this.currentPath.length; i++) {
-      fullPath += '\\' + this.currentPath[i];
+      fullPath += '/' + this.currentPath[i];
     }
     return fullPath;
   }
