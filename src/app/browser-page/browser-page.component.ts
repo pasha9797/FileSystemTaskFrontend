@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {FileSystemService} from "../service/file-system.service";
-import {FileDTO} from "../model/file-dto";
+import {FileSystemService} from '../service/file-system.service';
+import {FileDTO} from '../model/file-dto';
+import {ModalService} from '../service/modal-service';
 
 declare var $: any;
 
@@ -13,8 +14,8 @@ export class BrowserPageComponent implements OnInit {
   currentContent: FileDTO[];
   currentPath: string[];
 
-  textFileContent: string = '';
-  textFileName: string = '';
+  textFileContent: string = '...';
+  textFileName: string = '...';
 
   selectedFile: FileDTO;
   newNameInput: string = '';
@@ -23,16 +24,14 @@ export class BrowserPageComponent implements OnInit {
 
   fileToUpload: File;
 
-  modalMessage = '...';
-  modalHeader = '...';
 
   loading = false;
 
-  constructor(private fileSystemService: FileSystemService) {
+  constructor(private fileSystemService: FileSystemService, public modalService: ModalService) {
   }
 
   ngOnInit() {
-    this.loadDirectory("");
+    this.loadDirectory('');
   }
 
   loadDirectory(path: string) {
@@ -55,7 +54,7 @@ export class BrowserPageComponent implements OnInit {
         },
         (error) => {
           this.loading = false;
-          this.defaultRequestErrorHandler('Unable to load directory content', error);
+          this.modalService.defaultRequestErrorHandler('Unable to load directory content', error);
         });
   }
 
@@ -71,12 +70,12 @@ export class BrowserPageComponent implements OnInit {
         },
         (error) => {
           this.loading = false;
-          this.defaultRequestErrorHandler('Unable to open text file', error);
+          this.modalService.defaultRequestErrorHandler('Unable to open text file', error);
         });
   }
 
   showFileOverlay(text: string, name: string) {
-    document.getElementById("overlay").style.display = "block";
+    document.getElementById('overlay').style.display = 'block';
     this.textFileContent = text;
     this.textFileName = name;
   }
@@ -84,7 +83,7 @@ export class BrowserPageComponent implements OnInit {
   hideFileOverlay() {
     this.textFileContent = '';
     this.textFileName = '';
-    document.getElementById("overlay").style.display = "none";
+    document.getElementById('overlay').style.display = 'none';
   }
 
   getSizeString(size: number) {
@@ -134,12 +133,12 @@ export class BrowserPageComponent implements OnInit {
   }
 
   handleFileActionButton(event: Event) {
-    $(".btn-action").each(function (index) {
+    $('.btn-action').each(function (index) {
       $(this).removeClass('active');
     });
     event.srcElement.classList.add('active');
 
-    $(".block-action").each(function (index) {
+    $('.block-action').each(function (index) {
       $(this).css('display', 'none');
     });
     $('#' + event.srcElement.id.slice(0, event.srcElement.id.indexOf('-')) + '-block').css('display', 'block');
@@ -151,8 +150,8 @@ export class BrowserPageComponent implements OnInit {
 
   handleFileClick(file: FileDTO) {
     if (
-      document.getElementById("browse-button").classList.contains('active') ||
-      document.getElementById("new-button").classList.contains('active')
+      document.getElementById('browse-button').classList.contains('active') ||
+      document.getElementById('new-button').classList.contains('active')
     ) {
       if (file.directory)
         this.loadDirectory(file.path);
@@ -160,15 +159,15 @@ export class BrowserPageComponent implements OnInit {
         this.tryOpenFile(file.path);
     }
     else if (
-      document.getElementById("rename-button").classList.contains('active') ||
-      document.getElementById("delete-button").classList.contains('active')
+      document.getElementById('rename-button').classList.contains('active') ||
+      document.getElementById('delete-button').classList.contains('active')
     ) {
       this.selectedFile = file;
       this.smoothScrollTop();
     }
     else if (
-      document.getElementById("copy-button").classList.contains('active') ||
-      document.getElementById("move-button").classList.contains('active')
+      document.getElementById('copy-button').classList.contains('active') ||
+      document.getElementById('move-button').classList.contains('active')
     ) {
       if (this.selectedFile == null || !file.directory) {
         this.selectedFile = file;
@@ -183,7 +182,7 @@ export class BrowserPageComponent implements OnInit {
 
   renameSelectedFile(newName: string) {
     if (newName.indexOf('/') > -1 || newName.indexOf('/') > -1) {
-      this.showModal("Illegal characters found in file name.", "Can't rename");
+      this.modalService.showModal('Illegal characters found in file name.', 'Unable to rename');
       return;
     }
 
@@ -201,10 +200,10 @@ export class BrowserPageComponent implements OnInit {
           console.log('File renamed successfully');
           this.selectedFile.path = response._body;
           this.loading = false;
-          this.showModal('File has been renamed successfully to ' + response._body, 'Renamed successfully');
+          this.modalService.showModal('File has been renamed successfully to ' + response._body, 'Renamed successfully');
         },
         (error) => {
-          this.defaultRequestErrorHandler('Unable to rename', error);
+          this.modalService.defaultRequestErrorHandler('Unable to rename', error);
           this.loading = false;
         });
   }
@@ -221,7 +220,7 @@ export class BrowserPageComponent implements OnInit {
       .subscribe(
         (response: any) => {
           console.log('File copied successfully');
-          this.showModal("File has been copied successfully. New file created: " + response._body, 'Copied successfully');
+          this.modalService.showModal('File has been copied successfully. New file created: ' + response._body, 'Copied successfully');
           let newFile = Object.assign({}, this.selectedFile);
           newFile.path = response._body;
           this.currentContent.push(newFile);
@@ -229,7 +228,7 @@ export class BrowserPageComponent implements OnInit {
           this.loading = false;
         },
         (error) => {
-          this.defaultRequestErrorHandler('Unable to copy', error);
+          this.modalService.defaultRequestErrorHandler('Unable to copy', error);
           this.loading = false;
         });
   }
@@ -246,7 +245,7 @@ export class BrowserPageComponent implements OnInit {
       .subscribe(
         (response: any) => {
           console.log('File moved successfully');
-          this.showModal("File has been moved successfully to " + response._body, 'Moved successfully');
+          this.modalService.showModal('File has been moved successfully to ' + response._body, 'Moved successfully');
           this.selectedFile.path = response._body;
           this.currentContent.push(this.selectedFile);
           this.smoothScrollBottom();
@@ -254,7 +253,7 @@ export class BrowserPageComponent implements OnInit {
         },
         (error) => {
           this.loading = false;
-          this.defaultRequestErrorHandler('Unable to move', error);
+          this.modalService.defaultRequestErrorHandler('Unable to move', error);
         });
   }
 
@@ -264,7 +263,7 @@ export class BrowserPageComponent implements OnInit {
       .subscribe(
         (response: any) => {
           console.log('File removed successfully');
-          this.showModal("File has been removed successfully", 'Removed successfully');
+          this.modalService.showModal('File has been removed successfully', 'Removed successfully');
           let index = this.currentContent.indexOf(this.selectedFile);
           if (index > -1) {
             this.currentContent.splice(index, 1);
@@ -274,7 +273,7 @@ export class BrowserPageComponent implements OnInit {
         },
         (error) => {
           this.loading = false;
-          this.defaultRequestErrorHandler('Unable to delete', error);
+          this.modalService.defaultRequestErrorHandler('Unable to delete', error);
         });
   }
 
@@ -284,7 +283,7 @@ export class BrowserPageComponent implements OnInit {
       .subscribe(
         (uploadedFileDTO: any) => {
           console.log('File uploaded successfully');
-          this.showModal("Successfully uploaded file " + uploadedFileDTO.path, 'Uploaded successfully');
+          this.modalService.showModal('Successfully uploaded file ' + uploadedFileDTO.path, 'Uploaded successfully');
           this.fileToUpload = null;
 
           uploadedFileDTO.lastModifiedDate = new Date(uploadedFileDTO.lastModifiedDate);
@@ -296,7 +295,7 @@ export class BrowserPageComponent implements OnInit {
           this.loading = false;
         },
         (error) => {
-          this.defaultRequestErrorHandler('Unable to upload file', error);
+          this.modalService.defaultRequestErrorHandler('Unable to upload file', error);
           this.loading = false;
         });
   }
@@ -307,7 +306,7 @@ export class BrowserPageComponent implements OnInit {
       .subscribe(
         (newDirDTO: any) => {
           console.log('Directory created successfully');
-          this.showModal("Successfully created directory " + newDirDTO.path, 'Created successfully');
+          this.modalService.showModal('Successfully created directory ' + newDirDTO.path, 'Created successfully');
 
           newDirDTO.lastModifiedDate = new Date(newDirDTO.lastModifiedDate);
           newDirDTO.creationDate = new Date(newDirDTO.creationDate);
@@ -318,7 +317,7 @@ export class BrowserPageComponent implements OnInit {
           this.loading = false;
         },
         (error) => {
-          this.defaultRequestErrorHandler('Unable to create directory', error);
+          this.modalService.defaultRequestErrorHandler('Unable to create directory', error);
           this.loading = false;
         });
   }
@@ -327,19 +326,14 @@ export class BrowserPageComponent implements OnInit {
     this.fileToUpload = event.target.files[0];
   }
 
-  showModal(message: string, header: string) {
-    this.modalMessage = message;
-    this.modalHeader = header;
-    $('#myModal').modal('show');
-  }
 
   smoothScrollTop() {
-    $("html, body").animate({scrollTop: 0}, "slow");
+    $('html, body').animate({scrollTop: 0}, 'slow');
   }
 
 
   smoothScrollBottom() {
-    $("html, body").animate({scrollTop: document.body.scrollHeight}, "slow");
+    $('html, body').animate({scrollTop: document.body.scrollHeight}, 'slow');
   }
 
   getCurrentPathString() {
@@ -350,12 +344,5 @@ export class BrowserPageComponent implements OnInit {
     return fullPath;
   }
 
-  defaultRequestErrorHandler(modalHeader: string, error) {
-    console.log(error);
-    if (error.status > 0)
-      this.showModal(error._body, modalHeader);
-    else
-      this.showModal("Lost connection to the server", modalHeader);
-  }
 
 }

@@ -1,3 +1,26 @@
-<p>
-  sign-up-page works!
-</p>
+<div class="loader" *ngIf="loading"></div>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-sm-12">
+      <form class="mt-5 needs-validation">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input [(ngModel)]="username" type="text" class="form-control" id="username" name="username"
+                 placeholder="Enter your username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input [(ngModel)]="password" type="password" class="form-control" id="password" name="password"
+                 placeholder="Enter your password" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Confirm password</label>
+          <input [(ngModel)]="confirmPassword" type="password" class="form-control" id="confirm-password"
+                 name="confirm-password"
+                 placeholder="Enter password again" required>
+        </div>
+        <button type="submit" class="btn btn-primary" (click)="signUp()">Sign up</button>
+      </form>
+    </div>
+  </div>
+</div>
