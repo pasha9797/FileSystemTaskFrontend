@@ -2,6 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {FileSystemService} from '../service/file-system.service';
 import {FileDTO} from '../model/file-dto';
 import {ModalService} from '../service/modal-service';
+import {UserDTO} from "../model/user-dto";
+import {UserService} from "../service/user-service";
 
 declare var $: any;
 
@@ -11,26 +13,22 @@ declare var $: any;
   styleUrls: ['./browser-page.component.css']
 })
 export class BrowserPageComponent implements OnInit {
-  currentContent: FileDTO[];
-  currentPath: string[];
-
+  currentContent: FileDTO[] = [];
+  currentPath: string[] = [];
   textFileContent: string = '...';
   textFileName: string = '...';
-
   selectedFile: FileDTO;
   newNameInput: string = '';
-
   newDirInput: string = '';
-
   fileToUpload: File;
-
-
   loading = false;
+  authenticatedUser: UserDTO = null;
 
-  constructor(private fileSystemService: FileSystemService, public modalService: ModalService) {
+  constructor(private fileSystemService: FileSystemService, public modalService: ModalService, public userService: UserService) {
   }
 
   ngOnInit() {
+    this.authenticatedUser = this.userService.authenticatedUser;
     this.loadDirectory('');
   }
 
@@ -343,6 +341,4 @@ export class BrowserPageComponent implements OnInit {
     }
     return fullPath;
   }
-
-
 }

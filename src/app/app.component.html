@@ -1,6 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand" href="#" routerLink="/">File browser</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
 
@@ -10,12 +11,14 @@
         <a class="nav-link" href="#" routerLink="/browser">Browser</a>
       </li>
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+           aria-haspopup="true" aria-expanded="false">
           Account
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="#" routerLink="/sign-up">Sign up</a>
-          <a class="dropdown-item" href="#" routerLink="/sign-in">Sign in</a>
+          <a class="dropdown-item" href="#" routerLink="/sign-up" *ngIf="!userService.authenticatedUser">Sign up</a>
+          <a class="dropdown-item" href="#" routerLink="/sign-in" *ngIf="!userService.authenticatedUser">Sign in</a>
+          <a class="dropdown-item" href="#" (click)="signOut()" *ngIf="userService.authenticatedUser">Sign out</a>
         </div>
       </li>
     </ul>

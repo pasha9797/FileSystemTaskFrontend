@@ -1,24 +1,25 @@
 <div class="loader" *ngIf="loading"></div>
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-lg-9 col-md-6 col-sm-12">
-      <div id="overlay">
-        <div class="row justify-content-center">
-          <div class="card" style="width: 90%;">
-            <div class="card-body">
-              <div class="row justify-content-between">
-                <div class="col-auto">
-                  <h3 class="card-title">{{textFileName}}</h3>
-                </div>
-                <div class="col-auto">
-                  <i class="fas fa-window-close fa-2x" (click)="hideFileOverlay()"></i>
-                </div>
-              </div>
-              <p class="card-text" style="height: 85vh; overflow-y: scroll;">{{textFileContent}}</p>
+  <div id="overlay">
+    <div class="row justify-content-center">
+      <div class="card" style="width: 90%;">
+        <div class="card-body">
+          <div class="row justify-content-between">
+            <div class="col-auto">
+              <h3 class="card-title">{{textFileName}}</h3>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-window-close fa-2x" (click)="hideFileOverlay()"></i>
             </div>
           </div>
+          <p class="card-text" style="height: 85vh; overflow-y: scroll;">{{textFileContent}}</p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-9 col-md-6 col-sm-12">
       <nav aria-label="breadcrumb">
         <div class="row no-gutters">
           <div class="col-auto mt-1 mr-1">
@@ -45,10 +46,31 @@
   </div>
   <div class="row">
     <div class="col-lg-3 col-md-6 col-sm-12 order-md-2">
+      <div class="card mb-2" *ngIf="userService.authenticatedUser">
+        <h5 class="card-header">User</h5>
+        <div class="card-body">
+          <h5 class="card-text">
+            Current user:
+            <span class="badge badge-info">
+              {{userService.authenticatedUser.username}}
+            </span>
+          </h5>
+          <p class="card-text">
+            Permissions:
+            <span *ngFor="let permission of userService.authenticatedUser.permissions"
+                  class="badge badge-success mr-1"
+            >
+              {{permission}}
+            </span>
+          </p>
+        </div>
+      </div>
       <div class="card">
         <h5 class="card-header">Actions</h5>
         <div class="card-body">
+
           <p class="card-text">Choose what you want to do with files</p>
+
           <div class="row">
             <div class="col-auto">
               <div class="btn-group-vertical  btn-group-sm" role="group" aria-label="Choose action">
