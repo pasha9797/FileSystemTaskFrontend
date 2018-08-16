@@ -32,19 +32,26 @@ export class UserService {
     }));
 
     observable.subscribe((response: any) => {
-      this.authenticatedUser = response;
-      localStorage.setItem(this.authUserLocalStorageKey, JSON.stringify(this.authenticatedUser));
-      console.log(response);
+      this.saveAuthorizedUserToLocalStorage(response);
     });
 
     return observable;
   }
 
   public signOut() {
-    this.authenticatedUser = null;
-    localStorage.setItem(this.authUserLocalStorageKey, null);
+    this.removeAuthorizedUserFromLocalStorage();
     return this.http.delete('api/sessions').pipe(map((response: Response) => {
       return response;
     }));
+  }
+
+  public saveAuthorizedUserToLocalStorage(userDTO: UserDTO) {
+    this.authenticatedUser = userDTO;
+    localStorage.setItem(this.authUserLocalStorageKey, JSON.stringify(this.authenticatedUser));
+  }
+
+  public removeAuthorizedUserFromLocalStorage() {
+    this.authenticatedUser = null;
+    localStorage.setItem(this.authUserLocalStorageKey, null);
   }
 }

@@ -1,5 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Router} from "@angular/router";
+import {UserService} from "./user-service";
 
 declare var $: any;
 
@@ -8,7 +9,7 @@ export class ModalService {
   public modalMessage = '...';
   public modalHeader = '...';
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private userService: UserService) {
 
   }
 
@@ -24,6 +25,7 @@ export class ModalService {
       this.showModal('Lost connection to the server', modalHeader);
     else if(error.status==401){
       this.showModal('You are unauthorized. Please sign in', modalHeader);
+      this.userService.removeAuthorizedUserFromLocalStorage();
     }
     else if(error.status==403){
       this.showModal('You do not have enough permissions to perform this action!', modalHeader);

@@ -313,6 +313,7 @@ export class BrowserPageComponent implements OnInit {
           this.currentContent.push(newDirDTO);
           this.smoothScrollBottom();
           this.loading = false;
+          this.newDirInput = '';
         },
         (error) => {
           this.modalService.defaultRequestErrorHandler('Unable to create directory', error);
