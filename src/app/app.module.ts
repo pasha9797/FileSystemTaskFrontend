@@ -13,6 +13,11 @@ import {HttpClientModule} from "@angular/common/http";
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {UserService} from "./service/user-service";
 import {ModalService} from "./service/modal-service";
+import {JwtModule} from "@auth0/angular-jwt";
+
+export function jwtTokenGetter() {
+  return localStorage.getItem(UserService.TOKEN_STORAGE_KEY);
+}
 
 @NgModule({
   declarations: [
@@ -26,6 +31,14 @@ import {ModalService} from "./service/modal-service";
     FormsModule,
     HttpModule,
     HttpClientModule,
+    JwtModule.forRoot({
+      config: {
+        headerName: UserService.TOKEN_HEADER,
+        throwNoTokenError: false,
+        tokenGetter: jwtTokenGetter,
+        whitelistedDomains:["/api"]
+      }
+    }),
     AppRoutingModule,
     NgbModule.forRoot()
   ],

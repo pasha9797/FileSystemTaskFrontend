@@ -16,14 +16,10 @@ export class AppComponent {
   }
 
   signOut() {
-    this.userService.signOut().subscribe(
-      (content: any) => {
-        console.log('Signed out successfully');
-        this.router.navigate(['/sign-in']);
-      },
-      (error) => {
-        this.modalService.defaultRequestErrorHandler('Unable to sign out', error);
-      });
+    this.userService.signOut();
+    console.log('Signed out successfully');
+    this.router.navigate(['/sign-in']);
+
     return false;
   }
 }

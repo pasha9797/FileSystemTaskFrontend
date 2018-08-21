@@ -26,7 +26,8 @@ export class SignInPageComponent implements OnInit {
         this.modalService.showModal('You have successfully signed in', 'Signed in successfully');
         console.log('Signed in successfully');
         this.loading = false;
-        this.router.navigate(['/browser']);
+        setTimeout(()=>{ this.router.navigate(['/browser']) }, 2000)
+
       },
       (error) => {
         this.loading = false;

@@ -31,7 +31,7 @@ export class ModalService {
       this.showModal('You do not have enough permissions to perform this action!', modalHeader);
     }
     else if (error.status > 0)
-      this.showModal(error._body, modalHeader);
+      this.showModal(error.error, modalHeader);
     else
       this.showModal('Unknown error occurred', modalHeader);
   }

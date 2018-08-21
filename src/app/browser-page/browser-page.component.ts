@@ -22,13 +22,11 @@ export class BrowserPageComponent implements OnInit {
   newDirInput: string = '';
   fileToUpload: File;
   loading = false;
-  authenticatedUser: UserDTO = null;
 
   constructor(private fileSystemService: FileSystemService, public modalService: ModalService, public userService: UserService) {
   }
 
   ngOnInit() {
-    this.authenticatedUser = this.userService.authenticatedUser;
     this.loadDirectory('');
   }
 
@@ -62,7 +60,7 @@ export class BrowserPageComponent implements OnInit {
     this.fileSystemService.getFileContent(path)
       .subscribe(
         (content: any) => {
-          this.showFileOverlay(content._body, this.getFileNameFromPath(path));
+          this.showFileOverlay(content, this.getFileNameFromPath(path));
           console.log('Text file opened successfully');
           this.loading = false;
         },
@@ -196,9 +194,9 @@ export class BrowserPageComponent implements OnInit {
       .subscribe(
         (response: any) => {
           console.log('File renamed successfully');
-          this.selectedFile.path = response._body;
+          this.selectedFile.path = response;
           this.loading = false;
-          this.modalService.showModal('File has been renamed successfully to ' + response._body, 'Renamed successfully');
+          this.modalService.showModal('File has been renamed successfully to ' + response, 'Renamed successfully');
         },
         (error) => {
           this.modalService.defaultRequestErrorHandler('Unable to rename', error);
@@ -218,9 +216,9 @@ export class BrowserPageComponent implements OnInit {
       .subscribe(
         (response: any) => {
           console.log('File copied successfully');
-          this.modalService.showModal('File has been copied successfully. New file created: ' + response._body, 'Copied successfully');
+          this.modalService.showModal('File has been copied successfully. New file created: ' + response, 'Copied successfully');
           let newFile = Object.assign({}, this.selectedFile);
-          newFile.path = response._body;
+          newFile.path = response;
           this.currentContent.push(newFile);
           this.smoothScrollBottom();
           this.loading = false;
@@ -243,8 +241,8 @@ export class BrowserPageComponent implements OnInit {
       .subscribe(
         (response: any) => {
           console.log('File moved successfully');
-          this.modalService.showModal('File has been moved successfully to ' + response._body, 'Moved successfully');
-          this.selectedFile.path = response._body;
+          this.modalService.showModal('File has been moved successfully to ' + response, 'Moved successfully');
+          this.selectedFile.path = response;
           this.currentContent.push(this.selectedFile);
           this.smoothScrollBottom();
           this.loading = false;
